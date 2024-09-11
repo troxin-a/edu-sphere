@@ -7,6 +7,9 @@ app_name = UsersConfig.name
 from users import views
 
 urlpatterns = [
-    path('create/', views.UserCreateAPIView.as_view(), name="create-lesson"),
-    path('update/<int:pk>/', views.UserUpdateAPIView.as_view(), name="update-lesson"),
+    path('<int:pk>', views.UserRetrieveAPIView.as_view(), name="retrieve-user"),
+    path('create/', views.UserCreateAPIView.as_view(), name="create-user"),
+    path('update/<int:pk>/', views.UserUpdateAPIView.as_view(), name="update-user"),
+
+    path('payments/', views.PaymentListAPIView.as_view(), name="payments-list"),
 ]

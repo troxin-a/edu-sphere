@@ -1,6 +1,6 @@
 from django.db import models
 
-from users.models import NULLABLE
+NULLABLE = {"blank": True, "null": True}
 
 class Course(models.Model):
     name = models.CharField(verbose_name="Название", max_length=150)
