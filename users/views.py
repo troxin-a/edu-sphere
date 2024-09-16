@@ -1,29 +1,87 @@
 from rest_framework import generics
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from edu.permissions import IsModerator
 from users.models import User, Payment
-from users.serializers import PaymentSerializer, UserSerializer, UserUpdateSerializer
+from users.permissions import IsOwnerUserProfile
+from users.serializers import (
+    PaymentSerializer,
+    RegisterSerializer,
+    UserOwnerSerializer,
+    UserGeneralSerializer,
+    UserModeratorSerializer,
+)
 
 
 class UserCreateAPIView(generics.CreateAPIView):
-    serializer_class = UserSerializer
+    """Регистрация"""
+
+    serializer_class = RegisterSerializer
+    permission_classes = (AllowAny,)
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        user.set_password(user.password)
+        user.save()
 
 
 class UserRetrieveAPIView(generics.RetrieveAPIView):
-    serializer_class = UserSerializer
+    """
+    Профсмотр профиля пользователя.
+    Для модератора, владельца и всех остальных разные сериализаторы.
+    """
+
     queryset = User.objects.all()
+
+    def get_serializer_class(self):
+
+        if self.request.user.groups.filter(name="moderators").exists():
+            return UserModeratorSerializer
+        elif self.request.user == self.get_object():
+            return UserOwnerSerializer
+        return UserGeneralSerializer
+
+
+class UserListAPIView(generics.ListAPIView):
+    """
+    Профсмотр списка пользователей.
+    Для модератора и всех остальных разные сериализаторы.
+    """
+
+    queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.user.groups.filter(name="moderators").exists():
+            return UserModeratorSerializer
+        return UserGeneralSerializer
 
 
 class UserUpdateAPIView(generics.UpdateAPIView):
+    """Редактирование профиля пользователя."""
+
+    queryset = User.objects.all()
+    serializer_class = UserOwnerSerializer
+    permission_classes = (IsAuthenticated & IsOwnerUserProfile,)
+
+    def perform_update(self, serializer):
+        user = serializer.save()
+        user.set_password(user.password)
+        user.save()
+
+
+class UserDestroyAPIView(generics.DestroyAPIView):
     """
-    Редактировать можно любого пользователя кроме админа
-    Так же редактирование ограничено полями
+    Удаление пользователя.
+    Только модератор может удалять.
     """
 
-    queryset = User.objects.exclude(is_superuser=True)
-    serializer_class = UserUpdateSerializer
+    queryset = User.objects.all()
+    permission_classes = (IsModerator,)
 
 
 class PaymentListAPIView(generics.ListAPIView):
+    """Список платежей."""
+
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     ordering_fields = ("date",)

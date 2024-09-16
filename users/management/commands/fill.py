@@ -1,5 +1,6 @@
 from datetime import date
 from random import choice, randint
+from django.contrib.auth.models import Group
 from django.core.management import BaseCommand
 
 from edu.models import Course, Lesson
@@ -21,13 +22,11 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs) -> str | None:
 
         users = []
-        for _ in range(100):
-            name_domain = lambda: [choice(chars) for _ in range(randint(5, 10))]
-            email =  "".join(name_domain() + ["@"] + name_domain() + [choice([".ru", ".com"])])
+        for i in range(100):
+            email =  f"u{i+1}@u.ru"
             phone = "".join(["+79"] + [choice(digits) for _ in range(8)])
             users.append(User(email=email, phone=phone))
         User.objects.bulk_create(users)
-        print("Пользователи заполнены")
 
         courses = [Course(name=f"{i} курс", description=f"Описание {i} курса") for i in range(1, 11)]
         Course.objects.bulk_create(courses)
@@ -66,3 +65,6 @@ class Command(BaseCommand):
                 ))
         Payment.objects.bulk_create(payments)
         print("Платежи заполнены")
+
+        Group.objects.create(name="moderators")
+        print("Создана группа \"moderators\"")
