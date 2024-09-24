@@ -1,5 +1,5 @@
 from rest_framework import generics
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 from edu.permissions import IsModerator
 from users.models import User, Payment
@@ -14,10 +14,13 @@ from users.serializers import (
 
 
 class UserCreateAPIView(generics.CreateAPIView):
-    """Регистрация"""
+    """
+    Регистрация.
+    Только неавторизованный пользователь может зарегистрироваться
+    """
 
     serializer_class = RegisterSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = (~IsAuthenticated,)
 
     def perform_create(self, serializer):
         user = serializer.save()
@@ -27,7 +30,7 @@ class UserCreateAPIView(generics.CreateAPIView):
 
 class UserRetrieveAPIView(generics.RetrieveAPIView):
     """
-    Профсмотр профиля пользователя.
+    Просмотр профиля пользователя.
     Для модератора, владельца и всех остальных разные сериализаторы.
     """
 
@@ -35,10 +38,10 @@ class UserRetrieveAPIView(generics.RetrieveAPIView):
 
     def get_serializer_class(self):
 
-        if self.request.user.groups.filter(name="moderators").exists():
-            return UserModeratorSerializer
-        elif self.request.user == self.get_object():
+        if self.request.user == self.get_object():
             return UserOwnerSerializer
+        elif self.request.user.groups.filter(name="moderators").exists():
+            return UserModeratorSerializer
         return UserGeneralSerializer
 
 
@@ -86,3 +89,4 @@ class PaymentListAPIView(generics.ListAPIView):
     serializer_class = PaymentSerializer
     ordering_fields = ("date",)
     filterset_fields = ["course", "lesson", "method"]
+    permission_classes = (IsModerator,)

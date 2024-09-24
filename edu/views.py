@@ -133,12 +133,3 @@ class SubscriptionAPIView(views.APIView):
             Subscription.objects.create(user=user, course=course_item)
             message = "подписка добавлена"
         return Response({"message": message})
-
-
-# class SubscriptionDestroyAPIView(generics.DestroyAPIView):
-#     """
-#     Удаление подписки.
-#     """
-
-#     queryset = Lesson.objects.all()
-#     permission_classes = (IsAuthenticated & IsOwner,)
