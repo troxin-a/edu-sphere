@@ -26,6 +26,7 @@ class User(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name = "Пользователи"
+        ordering = ["-id"]
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
