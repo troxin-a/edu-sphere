@@ -9,6 +9,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
+        read_only_fields = ["date", "session_id", "link", "user"]
 
 
 class UserOwnerSerializer(serializers.ModelSerializer):
@@ -18,7 +19,7 @@ class UserOwnerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = (
+        fields = (            
             "id",
             "password",
             "email",

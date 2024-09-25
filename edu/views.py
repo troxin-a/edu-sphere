@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -118,6 +119,11 @@ class SubscriptionAPIView(views.APIView):
     serializer_class = SubscriptionSerializer
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(
+        request_body=SubscriptionSerializer,
+        operation_description="Создание/удаление подписки.",
+        responses={201: "'message': 'Подписка создана/удалена'"},
+    )
     def post(self, *args, **kwargs):
 
         user = self.request.user
