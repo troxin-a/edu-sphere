@@ -8,6 +8,8 @@ from edu.models import Course, Lesson, Subscription
 from edu.paginators import ResultsSetPagination
 from edu.permissions import IsModerator, IsOwner
 from edu.serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
+from edu.service import update_course
+from edu.tasks import send_email_about_course_update
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -36,6 +38,11 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer.validated_data["owner"] = self.request.user
         serializer.save()
 
+    def perform_update(self, serializer):
+        serializer.save()
+        instance = self.get_object()
+        update_course(instance.id)
+
     # def get_queryset(self):
     #     """
     #     Полный список курсов виден только модератору.
@@ -62,6 +69,9 @@ class LessonCreateAPIView(generics.CreateAPIView):
         serializer.validated_data["owner"] = self.request.user
         serializer.save()
 
+        course = serializer.instance.course
+        update_course(course.id)
+
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
     """
@@ -71,6 +81,12 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 
     queryset = Lesson.objects.all()
     permission_classes = (IsAuthenticated & IsOwner,)
+
+    def perform_destroy(self, instance):
+        course = Course.objects.get(pk=instance.course.id)
+        update_course(course.id)
+
+        instance.delete()
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
@@ -93,6 +109,19 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = (IsModerator | (IsAuthenticated & IsOwner),)
+
+    def perform_update(self, serializer):
+        """Если у урока меняется курс, отправить уведомления на оба курса: старый и новый"""
+
+        lesson = self.get_object()
+        course = Course.objects.get(pk=lesson.course.id)
+        update_course(course.id)
+
+        serializer.save()
+
+        new_course = serializer.instance.course
+        if course != new_course:
+            update_course(new_course.id)
 
 
 class LessonListAPIView(generics.ListAPIView):

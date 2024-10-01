@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         if pass1 != pass2:
             print("Пароли не совпадают.")
-            return        
+            return
         if not email:
             email = default_email
         if not first_name:

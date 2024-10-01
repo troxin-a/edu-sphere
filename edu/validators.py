@@ -28,6 +28,4 @@ class YoutubeOnly:
             for word in domains[1:]:
                 domain = word.split(" ")[0].split("/")[0]
                 if domain not in ALLOW_DOMAINS:
-                    raise ValidationError(
-                        f"[{key}]: Allowed references from YouTube only! Not {domain}"
-                    )
+                    raise ValidationError(f"[{key}]: Allowed references from YouTube only! Not {domain}")

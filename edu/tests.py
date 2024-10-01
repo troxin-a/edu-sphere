@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Group
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APITestCase
 from rest_framework import status
 
@@ -29,6 +30,7 @@ class LessonTestCase(APITestCase):
             "name": "test",
             "description": "test",
             "owner": self.user2.id,
+            "course": self.course1.id,
         }
         # Неавторизован
         response = self.client.post(url, data, format="json")
@@ -134,11 +136,11 @@ class LessonTestCase(APITestCase):
             "owner": self.lesson1.owner.pk,
         }
         # Неавторизован
-        response = self.client.patch(url, {"name": "test-patch"}, format="json")
+        response = self.client.patch(url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         # Пользователь-НЕ-владелец
         self.client.force_authenticate(user=self.user2)
-        response = self.client.patch(url, {"name": "test-patch"}, format="json")
+        response = self.client.patch(url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         # Модератор
         self.client.force_authenticate(user=self.moderator)
@@ -152,7 +154,14 @@ class LessonTestCase(APITestCase):
         self.assertEqual(response.json(), data1)
         # Пользователь-владелец (PUT метод)
         self.client.force_authenticate(user=self.user1)
-        response = self.client.put(url, {"name": "test-put"}, format="json")
+        response = self.client.put(
+            url,
+            {
+                "name": "test-put",
+                "course": self.course1.pk,
+            },
+            format="json",
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), data2)
 
@@ -229,8 +238,8 @@ class CourseTestCase(APITestCase):
         group_moderator = Group.objects.get(name="moderators")
         group_moderator.user_set.add(self.moderator)
 
-        self.course1 = Course.objects.create(name="course1", owner=self.user1)
-        # self.lesson1 = Lesson.objects.create(name="lesson1", course=self.course1)
+        self.now = "2024-10-01T00:00:00Z"
+        self.course1 = Course.objects.create(name="course1", owner=self.user1, updated_at=self.now)
 
     def test_create_course(self):
         """Тест на создание курса"""
@@ -252,7 +261,7 @@ class CourseTestCase(APITestCase):
         self.assertEqual(Course.objects.count(), 1)
         # Пользователь
         self.client.force_authenticate(user=self.user2)
-        response = self.client.post(url, data, format="json")
+        response = self.client.post(url, {"name": "test", "description": "test"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Course.objects.count(), 2)
         self.assertEqual(Course.objects.all().first().name, "test")
@@ -269,6 +278,7 @@ class CourseTestCase(APITestCase):
             "count_lessons": 0,
             "owner": self.course1.owner.pk,
             "lessons": [],
+            "updated_at": self.now,
         }
         # Неавторизован
         response = self.client.get(url, format="json")
@@ -296,6 +306,7 @@ class CourseTestCase(APITestCase):
                     "count_lessons": 0,
                     "owner": self.course1.owner.pk,
                     "lessons": [],
+                    "updated_at": self.now,
                 }
             ],
         }
@@ -311,16 +322,7 @@ class CourseTestCase(APITestCase):
     def test_patch_course(self):
         """Тест на редактирование курса"""
 
-        url = reverse("education:course-detail", args=(self.course1.pk,))
-        data = {
-            "is_subscribed": "Вы не подписаны",
-            "name": "test-put",
-            "description": None,
-            "preview": None,
-            "count_lessons": 0,
-            "owner": self.course1.owner.pk,
-            "lessons": [],
-        }
+        url = reverse("education:course-detail", args=[self.course1.pk])
         # Неавторизован
         response = self.client.patch(url, {"name": "test-patch"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -342,7 +344,7 @@ class CourseTestCase(APITestCase):
         self.client.force_authenticate(user=self.user1)
         response = self.client.put(url, {"name": "test-put"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), data)
+        self.assertEqual(response.json()["name"], "test-put")
 
     def test_delete_course(self):
         """Тест на удаление урока"""
