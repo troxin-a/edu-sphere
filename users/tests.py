@@ -169,13 +169,6 @@ class PaymentTestCase(APITestCase):
         self.course1 = Course.objects.create(name="course1")
         self.lesson1 = Lesson.objects.create(name="lesson1", course=self.course1, owner=self.user1)
 
-        self.pay1 = Payment.objects.create(
-            user=self.user1,
-            lesson=self.lesson1,
-            amount=150,
-            method="CH",
-            date="2024-10-10",
-        )
         self.pay2 = Payment.objects.create(
             user=self.user2,
             course=self.course1,
@@ -183,9 +176,15 @@ class PaymentTestCase(APITestCase):
             method="TF",
             date="2024-10-10",
         )
-        
+        self.pay1 = Payment.objects.create(
+            user=self.user1,
+            lesson=self.lesson1,
+            amount=150,
+            method="CH",
+            date="2024-10-10",
+        )
 
-    def test_user_list(self):
+    def test_payments_list(self):
         """Тест на просмотр списка платежей"""
 
         data = [
@@ -197,6 +196,8 @@ class PaymentTestCase(APITestCase):
                 "lesson": self.pay1.lesson.id,
                 "method": self.pay1.method,
                 "user": self.pay1.user.id,
+                "session_id": self.pay1.session_id,
+                "link": self.pay1.link,
             },
             {
                 "amount": self.pay2.amount,
@@ -206,6 +207,8 @@ class PaymentTestCase(APITestCase):
                 "lesson": None,
                 "method": self.pay2.method,
                 "user": self.pay2.user.id,
+                "session_id": self.pay2.session_id,
+                "link": self.pay2.link,
             },
         ]
 

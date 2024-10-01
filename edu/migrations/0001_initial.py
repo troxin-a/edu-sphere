@@ -8,36 +8,44 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Course',
+            name="Course",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=150, verbose_name='Название')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='Описание')),
-                ('preview', models.ImageField(blank=True, null=True, upload_to='courses', verbose_name='Превью')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=150, verbose_name="Название")),
+                ("description", models.TextField(blank=True, null=True, verbose_name="Описание")),
+                ("preview", models.ImageField(blank=True, null=True, upload_to="courses", verbose_name="Превью")),
             ],
             options={
-                'verbose_name': 'Курс',
-                'verbose_name_plural': 'Курсы',
+                "verbose_name": "Курс",
+                "verbose_name_plural": "Курсы",
             },
         ),
         migrations.CreateModel(
-            name='Lesson',
+            name="Lesson",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=150, verbose_name='Название')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='Описание')),
-                ('preview', models.ImageField(blank=True, null=True, upload_to='lessons', verbose_name='Превью')),
-                ('video_url', models.CharField(blank=True, max_length=200, null=True, verbose_name='Ссылка на видео')),
-                ('course', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='lessons', to='edu.course')),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=150, verbose_name="Название")),
+                ("description", models.TextField(blank=True, null=True, verbose_name="Описание")),
+                ("preview", models.ImageField(blank=True, null=True, upload_to="lessons", verbose_name="Превью")),
+                ("video_url", models.CharField(blank=True, max_length=200, null=True, verbose_name="Ссылка на видео")),
+                (
+                    "course",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="lessons",
+                        to="edu.course",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Урок',
-                'verbose_name_plural': 'Уроки',
+                "verbose_name": "Урок",
+                "verbose_name_plural": "Уроки",
             },
         ),
     ]

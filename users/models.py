@@ -33,17 +33,23 @@ class User(AbstractUser):
 
 
 class Payment(models.Model):
-    user = models.ForeignKey(to=User, verbose_name="Пользователь", on_delete=models.DO_NOTHING, related_name="payments", **NULLABLE)
+    user = models.ForeignKey(
+        to=User, verbose_name="Пользователь", on_delete=models.DO_NOTHING, related_name="payments", **NULLABLE
+    )
     date = models.DateField(verbose_name="Дата оплаты", **NULLABLE)
-    course = models.ForeignKey(to=Course, verbose_name="Оплаченный курс", on_delete=models.DO_NOTHING, related_name="paid_courses", **NULLABLE)
-    lesson = models.ForeignKey(to=Lesson, verbose_name="Оплаченный урок", on_delete=models.DO_NOTHING, related_name="paid_lessons", **NULLABLE)
+    course = models.ForeignKey(
+        to=Course, verbose_name="Оплаченный курс", on_delete=models.DO_NOTHING, related_name="paid_courses", **NULLABLE
+    )
+    lesson = models.ForeignKey(
+        to=Lesson, verbose_name="Оплаченный урок", on_delete=models.DO_NOTHING, related_name="paid_lessons", **NULLABLE
+    )
     amount = models.PositiveIntegerField(verbose_name="Сумма оплаты")
     method = models.CharField(max_length=2, verbose_name="Способ оплаты", choices=PAYMENT_METHODS)
     session_id = models.CharField(max_length=400, verbose_name="id сессии", **NULLABLE)
     link = models.URLField(max_length=400, verbose_name="Ссылка на оплату", **NULLABLE)
 
     def __str__(self):
-        return f'{self.amount} - {self.user}'
+        return f"{self.amount} - {self.user}"
 
     class Meta:
         verbose_name = "Платеж"
