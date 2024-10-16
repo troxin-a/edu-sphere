@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.black]
 line-length = 119
+exclude = "migrations"
 
 [tool.poetry.dependencies]
 python = "^3.10"
