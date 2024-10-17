@@ -2,6 +2,9 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 COPY pyproject.toml .
 RUN pip install --upgrade pip
 RUN pip install poetry
